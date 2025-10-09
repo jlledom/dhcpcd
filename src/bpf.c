@@ -292,12 +292,12 @@ next:
 }
 
 int
-bpf_attach(int fd, void *filter, unsigned int filter_len)
+bpf_attach(const struct bpf *bpf, void *filter, unsigned int filter_len)
 {
 	struct bpf_program pf = { .bf_insns = filter, .bf_len = filter_len };
 
 	/* Install the filter. */
-	return ioctl(fd, BIOCSETF, &pf);
+	return ioctl(bpf->bpf_fd, BIOCSETF, &pf);
 }
 
 #ifdef BIOCSETWF
@@ -549,7 +549,7 @@ bpf_arp_rw(const struct bpf *bpf, const struct in_addr *ia, bool recv)
 		return bpf_wattach(bpf->bpf_fd, buf, (unsigned int)(bp - buf));
 #endif
 
-	return bpf_attach(bpf->bpf_fd, buf, (unsigned int)(bp - buf));
+	return bpf_attach(bpf, buf, (unsigned int)(bp - buf));
 }
 
 int
@@ -690,7 +690,7 @@ bpf_bootp_rw(const struct bpf *bpf, bool read)
 	BPF_SET_STMT(bp, BPF_RET + BPF_K, BPF_WHOLEPACKET);
 	bp++;
 
-	return bpf_attach(bpf->bpf_fd, buf, (unsigned int)(bp - buf));
+	return bpf_attach(bpf, buf, (unsigned int)(bp - buf));
 }
 
 int

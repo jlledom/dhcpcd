@@ -1958,7 +1958,7 @@ bpf_read(struct bpf *bpf, void *data, size_t len)
 }
 
 int
-bpf_attach(int s, void *filter, unsigned int filter_len)
+bpf_attach(const struct bpf *bpf, void *filter, unsigned int filter_len)
 {
 	struct sock_fprog pf = {
 		.filter = filter,
@@ -1966,13 +1966,13 @@ bpf_attach(int s, void *filter, unsigned int filter_len)
 	};
 
 	/* Install the filter. */
-	if (setsockopt(s, SOL_SOCKET, SO_ATTACH_FILTER, &pf, sizeof(pf)) == -1)
+	if (setsockopt(bpf->bpf_fd, SOL_SOCKET, SO_ATTACH_FILTER, &pf, sizeof(pf)) == -1)
 		return -1;
 
 #ifdef SO_LOCK_FILTER
 	int on = 1;
 
-	if (setsockopt(s, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) == -1)
+	if (setsockopt(bpf->bpf_fd, SOL_SOCKET, SO_LOCK_FILTER, &on, sizeof(on)) == -1)
 		return -1;
 #endif
 

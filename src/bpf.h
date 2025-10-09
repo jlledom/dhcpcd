@@ -57,6 +57,7 @@
 struct bpf {
 	const struct interface *bpf_ifp;
 	int bpf_fd;
+	void *bpf_handle;
 	unsigned int bpf_flags;
 	void *bpf_buffer;
 	size_t bpf_size;
@@ -73,7 +74,7 @@ struct bpf * bpf_open(const struct interface *,
     int (*)(const struct bpf *, const struct in_addr *),
     const struct in_addr *);
 void bpf_close(struct bpf *);
-int bpf_attach(int, void *, unsigned int);
+int bpf_attach(const struct bpf *, void *, unsigned int);
 ssize_t bpf_send(const struct bpf *, uint16_t, const void *, size_t);
 ssize_t bpf_read(struct bpf *, void *, size_t);
 int bpf_arp(const struct bpf *, const struct in_addr *);
