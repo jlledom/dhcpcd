@@ -32,7 +32,7 @@
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#ifdef BSD
+#if defined(BSD) && !defined(__GNU__)
 #  include <sys/sysctl.h>
 #endif
 

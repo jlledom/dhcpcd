@@ -609,10 +609,11 @@ send_interface(struct fd_list *fd, const struct interface *ifp, int af)
 	const struct dhcp6_state *d6;
 #endif
 
-#ifndef AF_LINK
+#if !defined(AF_LINK) && defined(AF_PACKET)
 #define	AF_LINK	AF_PACKET
 #endif
 
+#ifdef AF_LINK
 	if (af == AF_UNSPEC || af == AF_LINK) {
 		const char *reason;
 
@@ -633,6 +634,7 @@ send_interface(struct fd_list *fd, const struct interface *ifp, int af)
 		} else
 			retval++;
 	}
+#endif
 
 #ifdef INET
 	if (af == AF_UNSPEC || af == AF_INET) {

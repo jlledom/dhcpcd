@@ -103,6 +103,13 @@ getprogname(void)
 }
 #endif
 
+#if defined(__GNU__)
+static const char *
+getprogname(void) {
+	return program_invocation_short_name;
+}
+#endif
+
 #ifndef SMALL
 /* Write the time, syslog style. month day time - */
 static int

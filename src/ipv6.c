@@ -45,7 +45,7 @@
 #include "compat/bitops.h"
 #endif
 
-#ifdef BSD
+#if defined(BSD) && !defined(__GNU__)
 /* Purely for the ND6_IFF_AUTO_LINKLOCAL #define which is solely used
  * to generate our CAN_ADD_LLADDR #define. */
 #  include <netinet6/in6_var.h>

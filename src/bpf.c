@@ -39,6 +39,8 @@
 /* Special BPF snowflake. */
 #include <linux/filter.h>
 #define	bpf_insn		sock_filter
+#elif defined(__GNU__)
+#include <pcap/bpf.h>
 #else
 #include <net/bpf.h>
 #endif
@@ -139,9 +141,10 @@ bpf_frame_bcast(const struct interface *ifp, const void *frame)
 	}
 }
 
-#ifndef __linux__
+#if !defined(__linux__) && !defined(__GNU__)
 /* Linux is a special snowflake for opening, attaching and reading BPF.
- * See if-linux.c for the Linux specific BPF functions. */
+ * See if-linux.c for the Linux specific BPF functions.
+ * For the Hurd, we just use the libpcap backend, see if-pcap.c. */
 
 const char *bpf_name = "Berkley Packet Filter";
 
@@ -312,8 +315,8 @@ bpf_wattach(int fd, void *filter, unsigned int filter_len)
 #endif
 #endif
 
-#ifndef __sun
-/* SunOS is special too - sending via BPF goes nowhere. */
+#if !defined(__sun) && !defined(__GNU__)
+/* SunOS and the Hurd are special too - sending via BPF goes nowhere. */
 ssize_t
 bpf_send(const struct bpf *bpf, uint16_t protocol,
     const void *data, size_t len)
@@ -341,6 +344,7 @@ bpf_send(const struct bpf *bpf, uint16_t protocol,
 }
 #endif
 
+#ifndef __GNU__
 void
 bpf_close(struct bpf *bpf)
 {
@@ -349,6 +353,7 @@ bpf_close(struct bpf *bpf)
 	free(bpf->bpf_buffer);
 	free(bpf);
 }
+#endif
 
 #ifdef ARP
 #define BPF_CMP_HWADDR_LEN	((((HWADDR_LEN / 4) + 2) * 2) + 1)

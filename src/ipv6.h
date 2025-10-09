@@ -36,11 +36,11 @@
 #include "if.h"
 
 #ifndef __linux__
-#  if !defined(__QNX__) && !defined(__sun)
+#  if !defined(__QNX__) && !defined(__sun) && !defined(__GNU__)
 #    include <sys/endian.h>
 #  endif
 #  include <net/if.h>
-#  ifndef __sun
+#  if !defined(__sun) && !defined(__GNU__)
 #    include <netinet6/in6_var.h>
 #  endif
 #endif
@@ -113,7 +113,7 @@
 #define	IN6_IFF_TEMPORARY IN6_IFF_PRIVACY
 #endif
 
-#ifdef __sun
+#if defined(__sun) || defined(__GNU__)
    /* Solaris lacks these defines.
     * While it supports DaD, to seems to only expose IFF_DUPLICATE
     * so we have no way of knowing if it's tentative or not.

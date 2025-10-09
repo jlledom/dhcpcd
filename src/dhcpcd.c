@@ -2574,7 +2574,7 @@ start_manager:
 
 	os_init();
 
-#if defined(BSD) && defined(INET6)
+#if defined(BSD) && !defined(__GNU__) && defined(INET6)
 	/* Disable the kernel RTADV sysctl as early as possible. */
 	if (ctx.options & DHCPCD_IPV6 && ctx.options & DHCPCD_IPV6RS)
 		if_disable_rtadv();
