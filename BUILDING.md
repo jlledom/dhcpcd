@@ -136,6 +136,11 @@ are disabled by default.
 For Valgrind, it needs to unlink the pipe files which it can't do anyway
 as it's dropped permissions. Otherwise it works fine.
 
+GNU/Hurd requires libpcap as build dependency.
+
+Only ethernet devices are currently supported on the Hurd platform; other network
+interface types are not yet implemented.
+
 ## Init systems
 We try and detect how dhcpcd should interact with system services at runtime.
 If we cannot auto-detect how do to this, or it is wrong then
