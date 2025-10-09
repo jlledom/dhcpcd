@@ -251,6 +251,7 @@ if [ -z "$OS" ]; then
 	esac
 	case "$REST" in
 	gnu/kfreebsd*)		OS="kfreebsd"; VENDOR= ;;
+	*gnu)             OS="gnu"; VENDOR= ;;
 	esac
 	# Special case
 	case "$OS" in
@@ -508,6 +509,12 @@ solaris*|sunos*)
 	echo "DHCPCD_SRCS+=	if-sun.c" >>$CONFIG_MK
 	echo "LDADD+=		-ldlpi -lkstat" >>$CONFIG_MK
 	;;
+hurd*)
+  echo "CSTD=gnu99" >>$CONFIG_MK
+  echo "CPPFLAGS+=	-D_GNU_SOURCE" >>$CONFIG_MK
+  echo "DHCPCD_SRCS+=	if-pcap.c if-hurd.c" >>$CONFIG_MK
+  echo "#define PATH_MAX 4096" >>$CONFIG_H
+;;
 *)
 	echo "DHCPCD_SRCS+=	if-bsd.c" >>$CONFIG_MK
 	;;
@@ -542,6 +549,14 @@ if [ -z "$INET" ] || [ "$INET" = yes ]; then
 		echo "DHCPCD_SRCS+=	ipv4ll.c" >>$CONFIG_MK
 	fi
 fi
+
+if [ -z "$INET6" ]; then
+	# Support for IPv6 in dhcpcd still not tested in hte Hurd
+	case "$OS" in
+	hurd*)	INET6=no; DHCP6=no;;
+	esac
+fi
+
 if [ -z "$INET6" ] || [ "$INET6" = yes ]; then
 	echo "Enabling INET6 support"
 	echo "CPPFLAGS+=	-DINET6" >>$CONFIG_MK
@@ -560,8 +575,9 @@ fi
 
 if [ -z "$PRIVSEP" ]; then
 	# privilege separation works fine .... except on Solaris
+	# Not tested in the Hurd yet.
 	case "$OS" in
-	solaris*|sunos*)	PRIVSEP=no;;
+	solaris*|sunos*|hurd*)	PRIVSEP=no;;
 	*)			PRIVSEP=yes;;
 	esac
 fi
@@ -606,6 +622,7 @@ if [ "$PRIVSEP" = yes ]; then
 			 fi
 			 ;;
 	solaris*|sunos*) echo "PRIVSEP_SRCS+=	privsep-sun.c" >>$CONFIG_MK;;
+  hurd*) ;;
 	*)		 echo "PRIVSEP_SRCS+=	privsep-bsd.c" >>$CONFIG_MK;;
 	esac
 else
@@ -1668,6 +1685,36 @@ EOF
 	fi
 	rm -f _dlopen.c _dlopen
 	$abort && exit 1
+fi
+
+# Check for Hurd dependencies if OS is hurd
+abort=false
+if [ "$OS" = "hurd" ]; then
+  # Check for libpcap
+  printf "Testing for libpcap ... "
+  if $PKG_CONFIG --exists libpcap 2>/dev/null; then
+    PCAP_CFLAGS=$($PKG_CONFIG --cflags libpcap 2>/dev/null)
+    PCAP_LIBS=$($PKG_CONFIG --libs libpcap 2>/dev/null)
+    echo "yes"
+    echo "CFLAGS+= $PCAP_CFLAGS" >>$CONFIG_MK
+    echo "LDADD+= $PCAP_LIBS" >>$CONFIG_MK
+  else
+    # Check with -lpcap if pkg-config fails
+    cat >_pcap.c <<EOF
+#include <pcap/pcap.h>
+int main(void) { return pcap_lib_version() != NULL; }
+EOF
+    if $XCC _pcap.c -o _pcap -lpcap 2>&3; then
+      echo "yes"
+      echo "LDADD+= -lpcap" >>$CONFIG_MK
+    else
+      echo "no"
+      echo "libpcap is required for Hurd support" >&2
+      abort=true
+    fi
+    rm -f _pcap.c _pcap
+    $abort && exit 1
+  fi
 fi
 
 # Transform for a make file
