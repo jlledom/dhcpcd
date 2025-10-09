@@ -25,7 +25,7 @@ uniqify()
 			*) result="$result${result:+ }$i";;
 		esac
 	done
-	echo "$result"
+	printf '%s\n' "$result"
 }
 
 # List interface config files in a directory.
@@ -175,8 +175,8 @@ syslog()
 	[ -n "$lvl" ] && shift
 	[ -n "$*" ] || return 0
 	case "$lvl" in
-	err|error)	echo "$interface: $*" >&2;;
-	*)		echo "$interface: $*";;
+	err|error)	printf '%s: %s\n' "$interface" "$*" >&2;;
+	*)		printf '%s: %s\n' "$interface" "$*";;
 	esac
 	if command -v logger >/dev/null 2>&1; then
 		logger -i -p daemon."$lvl" -t dhcpcd-run-hooks "$interface: $*"

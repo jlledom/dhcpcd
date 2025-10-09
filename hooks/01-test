@@ -5,7 +5,7 @@ if [ "$reason" = "TEST" ]; then
 	set | while read line; do
 		case "$line" in
 		interface=*|pid=*|reason=*|protocol=*|profile=*|skip_hooks=*)
-			echo "$line";;
+			printf '%s\n' "$line";;
 		esac
 	done
 	# Interface flags
