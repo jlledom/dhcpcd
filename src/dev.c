@@ -94,13 +94,17 @@ static int
 dev_start2(struct dhcpcd_ctx *ctx, const struct dev_dhcpcd *dev_dhcpcd,
     const char *name)
 {
-	char file[PATH_MAX];
+	char *file;
 	void *h;
 	void (*fptr)(struct dev *, const struct dev_dhcpcd *);
 	int r;
 
-	snprintf(file, sizeof(file), DEVDIR "/%s", name);
+	if (asprintf(&file, DEVDIR "/%s", name) == -1) {
+		logerr("%s: asprintf", __func__);
+		return -1;
+	}
 	h = dlopen(file, RTLD_LAZY);
+	free(file);
 	if (h == NULL) {
 		logerrx("dlopen: %s", dlerror());
 		return -1;
